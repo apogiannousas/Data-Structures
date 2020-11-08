@@ -1,8 +1,10 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "dlist.h"
 
 // *** init_list *** //
-void init_list(dlist *list) {
+dlist *create_list() {
+    dlist *list;
     // Memory allocation for list, head and tail
     list = (dlist *) malloc(sizeof(dlist));
     list->head = (dlist_node *) malloc(sizeof(dlist_node));
@@ -17,6 +19,31 @@ void init_list(dlist *list) {
     list->tail->prev = list->head;
     list->tail->nxt = NULL;
     list->size = 0;
+
+    return list;
+}
+
+// *** delete_list *** //
+void delete_list(dlist *list) {
+    dlist_node *curr, *temp;
+
+    // When list is empty just return
+    if (list == NULL) {
+        return;
+    }
+    curr = list->head->nxt;
+
+    // Delete all internal nodes
+    while (curr != list->tail) {
+        temp = curr;
+        curr = curr->nxt;
+        free(temp);
+    }
+
+    // Delete head, tail and list
+    free(list->head);
+    free(list->tail);
+    free(list);
 }
 
 // *** find_node *** //
@@ -29,13 +56,8 @@ dlist_node *find_node(dlist list, int data) {
 }
 
 // *** insert_node *** //
-int insert_node(dlist *list, int data) {
+void insert_node(dlist *list, int data) {
     dlist_node *new_node;
-    
-    // Check if node already exists
-    if (find_node(*list, data) != NULL) {
-        return 0;
-    }
 
     // Construct new node
     new_node = (dlist_node *) malloc(sizeof(dlist_node));
@@ -46,8 +68,6 @@ int insert_node(dlist *list, int data) {
     new_node->nxt->prev = new_node;
     new_node->prev->nxt = new_node;
     list->size++;
-
-    return 1;
 }
 
 // *** delete_node *** //
@@ -67,4 +87,27 @@ int delete_node(dlist *list, int data) {
     free(wanted_node);
 
     return 1;
+}
+
+// *** list_sum *** //
+int list_sum(dlist_node *start, dlist_node *end) {
+    int sum = 0;
+    dlist_node *curr;
+
+    for (curr = start; curr != end->nxt; curr = curr->nxt) {
+        sum += curr->data;
+    }
+
+    return sum;
+}
+
+// *** print_list *** //
+void print_list(dlist list) {
+    dlist_node *curr;
+
+    for (curr = list.head->nxt; curr != list.tail; curr = curr->nxt) {
+        printf("%d ", curr->data);
+    }
+
+    putchar('\n');
 }

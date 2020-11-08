@@ -1,7 +1,7 @@
 #ifndef _DLIST_H_
 #define _DLIST_H_
 
-// Structs //
+//-----------Structs-----------//
 typedef struct dlist_node_t {
     struct dlist_node_t *nxt;
     struct dlist_node_t *prev;
@@ -14,10 +14,13 @@ typedef struct dlist_t {
     int size;
 } dlist;
 
-// Function Prototypes //
-void init_list(dlist *list);
+//-----Function Prototypes-----//
+dlist *create_list();
+void delete_list(dlist *list);
 dlist_node *find_node(dlist list, int data);
-int insert_node(dlist *list, int data);
+void insert_node(dlist *list, int data);
 int delete_node(dlist *list, int data);
+int list_sum(dlist_node *start, dlist_node *end);
+void print_list(dlist list);
 
 #endif
