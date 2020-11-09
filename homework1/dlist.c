@@ -4,23 +4,23 @@
 
 // *** init_list *** //
 dlist *create_list() {
-    dlist *list;
+    dlist *new_list;
     // Memory allocation for list, head and tail
-    list = (dlist *) malloc(sizeof(dlist));
-    list->head = (dlist_node *) malloc(sizeof(dlist_node));
-    list->tail = (dlist_node *) malloc(sizeof(dlist_node));
+    new_list = (dlist *) malloc(sizeof(dlist));
+    new_list->head = (dlist_node *) malloc(sizeof(dlist_node));
+    new_list->tail = (dlist_node *) malloc(sizeof(dlist_node));
     // Initialise the data field
-    list->head->data = 0;
-    list->head->data = 0;
+    new_list->head->data = 0;
+    new_list->head->data = 0;
 
     // Initialise head's and tail's next and previous nodes to build the list
-    list->head->prev = NULL;
-    list->head->nxt = list->tail;
-    list->tail->prev = list->head;
-    list->tail->nxt = NULL;
-    list->size = 0;
+    new_list->head->prev = NULL;
+    new_list->head->nxt = new_list->tail;
+    new_list->tail->prev = new_list->head;
+    new_list->tail->nxt = NULL;
+    new_list->size = 0;
 
-    return list;
+    return new_list;
 }
 
 // *** delete_list *** //

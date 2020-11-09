@@ -1,5 +1,6 @@
 #ifndef _STACK_H_
 #define _STACK_H_
+#include <stdbool.h>
 
 //-----------Structs-----------//
 typedef struct stack_node_t {
@@ -8,16 +9,15 @@ typedef struct stack_node_t {
 } stack_node;
 
 typedef struct stack_t {
-    //struct stack_node_t *bottom;
     struct stack_node_t *top;
     int size;
 } stack;
 
 //-----Function Prototypes-----//
-bool isEmpty();
+bool isStackEmpty(stack *stack);
 stack *create_stack();
-void push(stack *stack, int data);
-int pop(stack *stack);
-int top(stack *stack);
+int push(stack *stack, int data);
+int pop(stack *stack, int *top_element_data);
+int top(stack *stack, int *top_element_data);
 
 #endif
