@@ -14,24 +14,19 @@ btree *create_btree() {
 }
 
 // *** delete_btree *** //
-int delete_btree(btree *btree) {
+void delete_btree(btree_node *root) {
     // Check if tree doesn't exist or is empty
-    if (btree == NULL || btree->root == NULL) {
-        return 0;
+    if (root == NULL) {
+        return;
     }
 
-    // Remove root since it is replaced by remove_node 
-    // until all nodes are deleted and then delete the tree
-    while (btree->size != 0) {
-        remove_node(btree, btree->root->data);
-    }
-    free(btree);
-
-    return 1;
+    delete_btree(root->left);
+    delete_btree(root->right);
+    free(root);
 }
 
-// *** find_node *** //
-btree_node *find_node(btree *btree, int data) {
+// *** find_treeNode *** //
+btree_node *find_treeNode(btree *btree, int data) {
     btree_node *curr_node, *parent;
 
     // Check if tree doesn't exist or is empty
@@ -120,7 +115,7 @@ bool isLeftChild(btree_node *node) {
 
 // *** add_node *** //
 int add_node(btree *btree, int data) {
-    btree_node *parent = find_node(btree, data);
+    btree_node *parent = find_treeNode(btree, data);
     btree_node *new_node;
 
     // Check if this node already exists 
@@ -155,7 +150,7 @@ int add_node(btree *btree, int data) {
 
 // *** remove_node *** //
 int remove_node(btree *btree, int data) {
-    btree_node *wanted_node = find_node(btree, data);
+    btree_node *wanted_node = find_treeNode(btree, data);
     btree_node *substitute_node;
 
     // Check if node was found

@@ -37,7 +37,7 @@ int enqueue(fifo *fifo, int data) {
     element->data = data;
     element->nxt = NULL;
 
-    // If fifo is not empty attach the new element in the end
+    // If fifo is not empty attach the new element at the end
     // , otherwise new element will be both front and rear
     if (isFifoEmpty(fifo) == false) {
         fifo->rear->nxt = element;

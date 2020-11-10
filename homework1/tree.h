@@ -17,8 +17,8 @@ typedef struct btree_t {
 
 //-----Function Prototypes-----//
 btree *create_btree();
-int delete_btree(btree *btree);
-btree_node *find_node(btree *btree, int data);
+void delete_btree(btree_node *root);
+btree_node *find_treeNode(btree *btree, int data);
 btree_node *find_maxFromLeftSubtree(btree_node *root);
 btree_node *find_minFromRightSubtree(btree_node *root);
 bool isRightChild(btree_node *node);
