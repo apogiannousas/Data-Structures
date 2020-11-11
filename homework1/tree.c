@@ -55,8 +55,8 @@ btree_node *find_treeNode(btree *btree, int data) {
     return parent;
 }
 
-// *** find_maxFromLeftSubtree *** //
-btree_node *find_maxFromLeftSubtree(btree_node *root) {
+// *** find_rightmost_leftnode *** //
+btree_node *find_rightmost_leftnode(btree_node *root) {
     btree_node *curr_node, *prev_node;
 
     // Check if tree is empty
@@ -75,8 +75,8 @@ btree_node *find_maxFromLeftSubtree(btree_node *root) {
     return prev_node;
 }
 
-// *** find_minFromRightSubtree *** //
-btree_node *find_minFromRightSubtree(btree_node *root) {
+// *** find_leftmost_rightnode *** //
+btree_node *find_leftmost_rightnode(btree_node *root) {
     btree_node *curr_node, *prev_node;
 
     // Check if tree is empty
@@ -162,7 +162,7 @@ int remove_node(btree *btree, int data) {
     // descendant in the left subtree and try to delete the descedant instead.
     // Otherwise if it has one child, make its parent the child's parent 
     if (wanted_node->left != NULL && wanted_node->right != NULL) {
-        substitute_node = find_maxFromLeftSubtree(wanted_node);
+        substitute_node = find_rightmost_leftnode(wanted_node);
         wanted_node->data = substitute_node->data;
         wanted_node = substitute_node;
     }
