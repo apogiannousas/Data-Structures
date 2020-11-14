@@ -7,6 +7,10 @@ stack *create_stack() {
 
     // Allocate memory for a new stack and initialise it
     new_stack = (stack *) malloc(sizeof(stack));
+    if (new_stack == NULL) {
+        exit(EXIT_FAILURE);
+    }
+
     new_stack->top = NULL;
     new_stack->size = 0;
 
@@ -23,27 +27,30 @@ bool isStackEmpty(stack *stack) {
 }
 
 // *** push *** //
-int push(stack *stack, int data) {
+void push(stack *stack, int data) {
     stack_node *element = NULL;
 
     // Check if there hasn't been memory allocated for stack
     if (stack == NULL) {
-        return 0;
+        return;
     }
 
     // Allocate memory for new element and put it at the top
     element = (stack_node *) malloc(sizeof(stack_node));
+    if (element == NULL) {
+        exit(EXIT_FAILURE);
+    }
+    
     element->data = data;
     element->nxt = stack->top;
     stack->top = element;
     stack->size++;
-
-    return 1;
 }
 
 // *** pop *** //
-int pop(stack *stack, int *top_element_data) {
+int pop(stack *stack) {
     stack_node *top_element;
+    int top_element_data;
 
     // Check if there hasn't been memory allocated for stack or if it is empty
     if (stack == NULL || isStackEmpty(stack) == true) {
@@ -53,21 +60,20 @@ int pop(stack *stack, int *top_element_data) {
     // Make top's next element the new top element
     // , delete old top and return it's value 
     top_element = stack->top;
-    *top_element_data = top_element->data;
+    top_element_data = top_element->data;
     stack->top = stack->top->nxt;
     stack->size--;
     top_element->nxt = NULL;
     free(top_element);
 
-    return 1;
+    return top_element_data;
 }
 
 // *** top *** //
-int top(stack *stack, int *top_element_data) {
+int top(stack *stack) {
     // Check if there has been memory allocated for stack and that it isn't empty
     if (stack != NULL && isStackEmpty(stack) == false) {
-        *top_element_data = stack->top->data;
-        return 1;
+        return stack->top->data;
     }
 
     return 0;

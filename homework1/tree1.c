@@ -13,6 +13,7 @@ void print_levelorder(btree *btree);
 int main(int argc, char *argv[]) {
     stack *stack = read_postorder();
     btree *btree = construct_btree(stack);
+    
     print_levelorder(btree);
     free(stack);
     delete_btree(btree->root);
@@ -47,7 +48,7 @@ btree *construct_btree(stack *stack) {
     // Obtain every element from stack and put it
     // in the right place at the binary tree
     while (isStackEmpty(stack) == false) {
-        pop(stack, &data);
+        data = pop(stack);
         add_node(btree, data);
     }
 
@@ -65,7 +66,7 @@ void print_levelorder(btree *btree) {
     while (isFifoEmpty(fifo) == false) {
         // Dequeue and print front element then
         // proceed to enqueue its children
-        dequeue(fifo, &data);
+        data = dequeue(fifo);
         printf("%d ", data);
         curr_node = find_treeNode(btree, data);
         

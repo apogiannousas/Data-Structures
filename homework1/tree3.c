@@ -8,7 +8,7 @@ fifo *read_preorder();
 btree *construct_btree(fifo *fifo);
 int pathfromNodeToRoot(fifo *fifo, btree_node *node, btree_node *root);
 int pathfromRootToNode(fifo *fifo, btree_node *root, btree_node *node);
-int pathfromNodeToNode(fifo *fifo, btree_node *root, btree_node *node1, btree_node *node2);
+int pathfromNodeToNode(fifo *fifo, btree *btree, btree_node *node1, btree_node *node2);
 void print_path(fifo *fifo);
 
 //------------Main-------------//
@@ -23,7 +23,6 @@ int main(int argc, char *argv[]) {
     fifo->rear = NULL;
     fifo->size = 0;
 
-    // Request two integers
     printf("Enter 2 integers: ");
     scanf("%d %d", &node1_data, &node2_data);
 
@@ -39,8 +38,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Find the minimum path from node1 to node2
-    if (pathfromNodeToNode(fifo, btree->root, node1, node2) == 0) {
+    if (pathfromNodeToNode(fifo, btree, node1, node2) == 0) {
         return 1;
     }
 
@@ -79,7 +77,7 @@ btree *construct_btree(fifo *fifo) {
     // Obtain every element from fifo and put
     // it in the right place at the binary tree
     while (isFifoEmpty(fifo) == false) {
-        dequeue(fifo, &data);
+        data = dequeue(fifo);
         add_node(btree, data);
     }
 
@@ -108,7 +106,6 @@ int pathfromNodeToRoot(fifo *fifo, btree_node *node, btree_node *root) {
 // *** pathfromRootToNode *** //
 int pathfromRootToNode(fifo *fifo, btree_node *root, btree_node *node) {
     btree_node *curr = root;
-    int data = 0;
 
     // Traverse the tree from root till you 
     // reach the node and store the path
@@ -123,7 +120,7 @@ int pathfromRootToNode(fifo *fifo, btree_node *root, btree_node *node) {
         else {
             // If initial node is the root return an empty path
             if (fifo->size == 1) {
-                dequeue(fifo, &data);
+                dequeue(fifo);
             }
             return 1;
         }
@@ -133,27 +130,33 @@ int pathfromRootToNode(fifo *fifo, btree_node *root, btree_node *node) {
 }
 
 // *** pathfromNodeToNode *** //
-int pathfromNodeToNode(fifo *fifo, btree_node *root, btree_node *node1, btree_node *node2) {
-    // If the nodes are in a different subtree we follow the path 
-    // node1->root->node2, otherwise if they are on the same subtree 
-    // we recall the function with the root of the subtree as root
-    if (node1->data < root->data && node2->data < root->data) {
-        return pathfromNodeToNode(fifo, root->left, node1, node2);
-    }
-    else if (node1->data > root->data && node2->data > root->data) {
-        return pathfromNodeToNode(fifo, root->right, node1, node2);
-    }
-    else {
-        if (pathfromNodeToRoot(fifo, node1, root) != 1) {
-            return 0;
+int pathfromNodeToNode(fifo *fifo, btree *btree, btree_node *node1, btree_node *node2) {
+    btree_node *curr_root = btree->root;
+    
+    // If the nodes are in a different subtree we follow the path node1->root->node2,
+    // otherwise if they are on the same subtree we take as new root the root of the 
+    // subtree. By doing this all cases are reduced to the initial one
+    while (curr_root != NULL) {
+        if (node1->data < curr_root->data && node2->data < curr_root->data) {
+            curr_root = curr_root->left;
         }
+        else if (node1->data > curr_root->data && node2->data > curr_root->data) {
+            curr_root = curr_root->right;
+        }
+        else {
+            if (pathfromNodeToRoot(fifo, node1, curr_root) != 1) {
+                break;
+            }
 
-        if (pathfromRootToNode(fifo, root, node2) != 1) {
-            return 0;
+            if (pathfromRootToNode(fifo, curr_root, node2) != 1) {
+                break;
+            }
+            
+            return 1;
         }
-        
-        return 1;
     }
+
+    return 0;
 }
 
 void print_path(fifo *fifo) {
@@ -161,7 +164,7 @@ void print_path(fifo *fifo) {
     
     printf("\nPath is: ");
     while (isFifoEmpty(fifo) == false) {
-        dequeue(fifo, &data);
+        data = dequeue(fifo);
         if (fifo->size != 0) {
             printf("%d ", data);
         }

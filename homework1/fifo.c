@@ -7,6 +7,10 @@ fifo *create_fifo() {
 
     // Allocate memory for a new fifo and initialise it
     new_fifo = (fifo *) malloc(sizeof(fifo));
+    if (new_fifo == NULL) {
+        exit(EXIT_FAILURE);
+    }
+
     new_fifo->front = NULL;
     new_fifo->rear = NULL;
     new_fifo->size = 0;
@@ -24,16 +28,20 @@ bool isFifoEmpty(fifo *fifo) {
 }
 
 // *** enqueue *** //
-int enqueue(fifo *fifo, int data) {
+void enqueue(fifo *fifo, int data) {
     fifo_node *element = NULL;
 
     // Check if there hasn't been memory allocated for fifo
     if (fifo == NULL) {
-        return 0;
+        return;
     }
 
     // Construct the new element of the fifo
     element = (fifo_node *) malloc(sizeof(fifo_node));
+    if (element == NULL) {
+        exit(EXIT_FAILURE);
+    }
+
     element->data = data;
     element->nxt = NULL;
 
@@ -47,13 +55,12 @@ int enqueue(fifo *fifo, int data) {
         fifo->front = fifo->rear = element;
     }
     fifo->size++;
-
-    return 1;
 }
 
 // *** dequeue *** //
-int dequeue(fifo *fifo, int *front_element_data) {
+int dequeue(fifo *fifo) {
     fifo_node *front_element = NULL;
+    int front_element_data;
     
     // Check if there hasn't been memory allocated for fifo or if it is empty
     if (fifo == NULL || isFifoEmpty(fifo) == true) {
@@ -64,9 +71,9 @@ int dequeue(fifo *fifo, int *front_element_data) {
     front_element = fifo->front;
     fifo->front = fifo->front->nxt;
     front_element->nxt = NULL;
-    *front_element_data = front_element->data;
+    front_element_data = front_element->data;
     fifo->size--;
     free(front_element);
 
-    return 1;
+    return front_element_data;
 }

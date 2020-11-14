@@ -3,37 +3,26 @@
 #include "tree.h"
 
 //-----Function Prototypes-----//
-int *read_levelorder(int *size);
-int add_child(btree_node *parent, int child_data, char typeofchild);
-void add_nodesLevelorder (btree_node *parent, int *array, int size, int parent_index);
+btree_node **read_levelorder(int *size);
+int add_child(btree_node *parent, btree_node *child, char typeofchild);
+void add_nodesLevelorder (btree_node **array, int size);
 bool istreeBST(btree_node *root);
 
 //------------Main-------------//
 int main(int argc, char *argv[]) {
-    int data = 0, size;
+    int size = 0;
     btree *btree = create_btree();
-    int *array = read_levelorder(&size);
+    btree_node **array = read_levelorder(&size);
 
-    // Give binary tree its final size
     btree->size = size;
-
-    // Retrieve first element
-    if (size == 0) {
+    if (btree == NULL || size == 0) {
         return 1;
     }
-    data = array[0];
+    btree->root = array[0];
 
-    // Make it the root
-    if (add_node(btree, data) == 0) {
-        return 1;
-    }
-
-    // Add all nodes to the binary tree and delete fifo
-    add_nodesLevelorder(btree->root, array, size, 0);
+    add_nodesLevelorder(array, size);
     free(array);
 
-    // Root exists so we have a tree and
-    // check if it is a binary search tree
     if (istreeBST(btree->root) == true) {
         printf("Binary Search Tree\n");
     }
@@ -50,18 +39,33 @@ int main(int argc, char *argv[]) {
 //---Funtion Implementations---//
 
 // *** read_levelorder *** //
-int *read_levelorder(int *size) {
-    int *array = NULL;
+btree_node **read_levelorder(int *size) {
+    btree_node **array = NULL, **temp = NULL;
     int data = 0;
 
     // Read the level-order traversal of a binary
-    // tree and store it in an array
+    // tree and store it in an array of nodes
     *size = 0;
     scanf("%d",&data);
     while (data >= 0) {
+        // Alloate memory for a new node and initialise it
+        temp = (btree_node **) realloc(array, ((*size) + 1)*sizeof(btree_node *));
+        if (temp == NULL) {
+            exit(EXIT_FAILURE);
+        }
+        array = temp;
+
+        array[*size] = (btree_node *) malloc(sizeof(btree_node));
+        if (array[*size] == NULL) {
+            exit(EXIT_FAILURE);
+        }
+
+        array[*size]->parent = NULL;
+        array[*size]->left = NULL;
+        array[*size]->right = NULL;
+        array[*size]->data = data;
+
         (*size)++;
-        array = realloc(array, (*size)*sizeof(int));
-        array[(*size) - 1] = data;
         scanf("%d", &data);
     }
 
@@ -69,28 +73,21 @@ int *read_levelorder(int *size) {
 }
 
 // *** add_child *** //
-int add_child(btree_node *parent, int child_data, char typeofchild) {
-    btree_node *child;
-
-    // Check if parent exists
-    if (parent == NULL) {
+int add_child(btree_node *parent, btree_node *child, char typeofchild) {
+    // Check if parent and child exist
+    if (parent == NULL || child == NULL) {
         return 0;
     }
 
-    // Allocate memory for child and set properly its fields
-    child = (btree_node *) malloc(sizeof(btree_node));
-    child->parent = parent;
-    child->left = NULL;
-    child->right = NULL;
-    child->data = child_data;
-
-    // Make the new node either left or right child of the parent
+    // Make the child either left or right child of the parent
+    // and make parent the child's actual parent
     if (typeofchild == 'l') {
         parent->left = child;
     }
     else {
         parent->right = child;
     }
+    child->parent = parent;
 
     return 1;
 }
@@ -98,24 +95,24 @@ int add_child(btree_node *parent, int child_data, char typeofchild) {
 // *** add_nodesLevelorder *** //
 // This function is based on the fact that with a levelorder traversal in an array 
 // if a node is in a[i] then its children if they exist are in a[2*i + 1] and a[2*i + 2]
-void add_nodesLevelorder (btree_node *parent, int *array, int size, int parent_index) {
-    int leftchild_index = 2*parent_index + 1;
-    int rightchild_index = 2*parent_index + 2;
+void add_nodesLevelorder (btree_node **array, int size) {
+    int leftchild_index, rightchild_index, i;
 
-    // if we reach an index out of the array range means we are done
-    if (leftchild_index >= size) {
-        return;
+    for (i = 0; i < size; i++) {
+        leftchild_index = 2*i + 1;
+        rightchild_index = 2*i + 2;
+
+        // if we reach an index out of the array range means we are done
+        if (leftchild_index >= size) {
+            return;
+        }
+        add_child(array[i], array[leftchild_index], 'l');
+
+        if (rightchild_index >= size) {
+            return;
+        }
+        add_child(array[i], array[rightchild_index], 'r');
     }
-    add_child(parent, array[leftchild_index], 'l');
-
-    if (rightchild_index >= size) {
-        return;
-    }
-    add_child(parent, array[rightchild_index], 'r');
-
-    // Do the same for both children
-    add_nodesLevelorder(parent->left, array, size, leftchild_index);
-    add_nodesLevelorder(parent->right, array, size, rightchild_index);
 }
 
 bool istreeBST(btree_node *root) {

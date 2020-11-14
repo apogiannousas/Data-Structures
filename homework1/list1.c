@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
 //---Funtion Implementations---//
 
 // *** find_sequence *** //
-// if successful it returns the largest sequence  //
+// If successful it returns the largest sequence  //
 // with a sum equal to zero, else it returns NULL //
 sequence_t *find_sequence(dlist list) {
     sequence_t *sequence = NULL;
@@ -66,6 +66,9 @@ sequence_t *find_sequence(dlist list) {
             // Check if sequence's sum is zero and if so return it
             if (sum == 0) {
                 sequence = (sequence_t *) malloc(sizeof(sequence_t));
+                if (sequence == NULL) {
+                    exit(EXIT_FAILURE);
+                }
                 // Store nodes at start and end
                 sequence->start_node = start;
                 sequence->end_node = end;

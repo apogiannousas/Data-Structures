@@ -14,10 +14,10 @@ typedef struct stack_t {
 } stack;
 
 //-----Function Prototypes-----//
-bool isStackEmpty(stack *stack);
 stack *create_stack();
-int push(stack *stack, int data);
-int pop(stack *stack, int *top_element_data);
-int top(stack *stack, int *top_element_data);
+bool isStackEmpty(stack *stack);
+void push(stack *stack, int data);
+int pop(stack *stack);
+int top(stack *stack);
 
 #endif

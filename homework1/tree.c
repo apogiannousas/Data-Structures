@@ -7,6 +7,10 @@ btree *create_btree() {
 
     // Allocate memory for a new binary tree and initialise it
     new_btree = (btree *) malloc(sizeof(btree));
+    if (new_btree == NULL) {
+        exit(EXIT_FAILURE);
+    }
+
     new_btree->root = NULL;
     new_btree->size = 0;
 
@@ -125,6 +129,10 @@ int add_node(btree *btree, int data) {
 
     // Allocate memory for new node and set properly its fields
     new_node = (btree_node *) malloc(sizeof(btree_node));
+    if (new_node == NULL) {
+        exit(EXIT_FAILURE);
+    }
+    
     new_node->parent = parent;
     new_node->left = NULL;
     new_node->right = NULL;

@@ -18,7 +18,7 @@ typedef struct fifo_t {
 //-----Function Prototypes-----//
 fifo *create_fifo();
 bool isFifoEmpty(fifo *fifo);
-int enqueue(fifo *fifo, int data);
-int dequeue(fifo *fifo, int *front_element_data);
+void enqueue(fifo *fifo, int data);
+int dequeue(fifo *fifo);
 
 #endif

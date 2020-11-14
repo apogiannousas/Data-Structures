@@ -1,14 +1,27 @@
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "dlist.h"
 
 // *** init_list *** //
 dlist *create_list() {
     dlist *new_list;
+    
     // Memory allocation for list, head and tail
     new_list = (dlist *) malloc(sizeof(dlist));
+    if (new_list == NULL) {
+        exit(EXIT_FAILURE);
+    }
+
     new_list->head = (dlist_node *) malloc(sizeof(dlist_node));
+    if (new_list->head == NULL) {
+        exit(EXIT_FAILURE);
+    }
+
     new_list->tail = (dlist_node *) malloc(sizeof(dlist_node));
+    if (new_list->tail == NULL) {
+        exit(EXIT_FAILURE);
+    }
+
     // Initialise the data field
     new_list->head->data = 0;
     new_list->head->data = 0;
@@ -61,7 +74,11 @@ void insert_node(dlist *list, int data) {
 
     // Construct new node
     new_node = (dlist_node *) malloc(sizeof(dlist_node));
+    if (new_node == NULL) {
+        exit(EXIT_FAILURE);
+    }
     new_node->data = data;
+    
     // Attach it at the end of the list before the tail
     new_node->prev = list->tail->prev;
     new_node->nxt = list->tail;
