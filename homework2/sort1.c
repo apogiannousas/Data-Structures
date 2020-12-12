@@ -1,35 +1,83 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "sort.h"
 
+alphabet_info *create_alphabet(int radixsort_type, unsigned int alphabet_digit_length);
+
 int main(int argc, char *argv[]) {
-    dlist *list = create_list();
-    int data;
+    enum sorting_algorithm {insort = 1, selsort, quicksort, mergesort, radixsortMSD, radixsortLSD};
+    enum sorting_algorithm sort;
+	alphabet_info *alphabet;
+    dlist *list;
 
-    scanf("%d",&data);
-    while (data != -1) {
-        insert_node(list, data);
-        scanf("%d", &data);
-    }
-    print_list(*list);
-    putchar('\n');
-
-    if (argc != 2) {
+	if (argc < 2 || argc > 3) {
         printf("Invalid argument\n");
         return 1;
     }
 
-    if (atoi(argv[1]) == 1) {
-        insertion_sort(list);
-    }
-    else if (atoi(argv[1]) == 2) {
-        selection_sort(list);
-    }
-    else if (atoi(argv[1]) == 3) {
-        quick_sort(list, 0, list->size - 1, 0);
-    }
-    else if (atoi(argv[1]) == 4) {
-        merge_sort(list, 0);
+    sort = atoi(argv[1]); 
+    switch (sort) {
+        case insort: {
+            list = read_list();
+            print_list(*list);
+            putchar('\n');
+            insertion_sort(list);
+            break;
+        }
+        case selsort: {
+            list = read_list();
+            print_list(*list);
+            putchar('\n');
+            selection_sort(list);
+            break;
+        }
+        case quicksort: {
+            list = read_list();
+            print_list(*list);
+            putchar('\n');
+            quick_sort(list, 0, list->size - 1, 0);
+            break;
+        }
+        case mergesort: {
+            list = read_list();
+            print_list(*list);
+            putchar('\n');
+            merge_sort(list, 0);
+            break;
+        }
+        case radixsortMSD: {
+            if (argc != 3) {
+				printf("Invalid argument\n");
+				return 1;
+			}
+            alphabet = create_alphabet(radixsortMSD, (unsigned int)atoi(argv[2]));
+
+            list = read_list();
+            print_list(*list);
+            putchar('\n');
+			radix_sortMSD(list, *alphabet, 0);
+            free(alphabet);
+			break;
+        }
+        case radixsortLSD: {
+            if (argc != 3) {
+				printf("Invalid argument\n");
+				return 1;
+			}
+            alphabet = create_alphabet(radixsortLSD, (unsigned int)atoi(argv[2]));
+
+            list = read_list();
+            print_list(*list);
+            putchar('\n');
+			radix_sortLSD(list, *alphabet);
+            free(alphabet);
+			break;
+        }
+        default: {
+            printf("Invalid argument\n");
+            return 1;
+        }
     }
 
     putchar('\n');
@@ -37,4 +85,72 @@ int main(int argc, char *argv[]) {
     delete_list(list);
 
     return 0;
+}
+
+// *** create_alphabet *** //
+alphabet_info *create_alphabet(int radixsort_type, unsigned int alphabet_digit_length) {
+	alphabet_info *alphabet = (alphabet_info *) malloc(sizeof(alphabet_info));
+
+    if (alphabet == NULL) {
+        perror("malloc");
+        exit(EXIT_FAILURE);
+    }
+    
+    if (radixsort_type == 5) {
+        // Return the correct alphabet for a certain number of bits(length of each digit) given
+        alphabet->digit_length = alphabet_digit_length;
+        alphabet->digit_num = pow(2, alphabet_digit_length);
+        if (alphabet_digit_length == 1) {
+            alphabet->mask = MSD_MASK1;
+        }
+        else if (alphabet_digit_length == 2) {
+            alphabet->mask = MSD_MASK2;
+        }
+        else if (alphabet_digit_length == 4) {
+            alphabet->mask = MSD_MASK3;
+        }
+        else if (alphabet_digit_length == 8) {
+            alphabet->mask = MSD_MASK4;
+        }
+        else if (alphabet_digit_length == 16) {
+            alphabet->mask = MSD_MASK5;
+        }
+        else {
+            free(alphabet);
+            printf("Invalid argument\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    else if (radixsort_type == 6) {
+        // Return the correct alphabet for a certain number of bits(length of each digit) given
+        alphabet->digit_length = alphabet_digit_length;
+        alphabet->digit_num = pow(2, alphabet_digit_length);
+        if (alphabet_digit_length == 1) {
+            alphabet->mask = LSD_MASK1;
+        }
+        else if (alphabet_digit_length == 2) {
+            alphabet->mask = LSD_MASK2;
+        }
+        else if (alphabet_digit_length == 4) {
+            alphabet->mask = LSD_MASK3;
+        }
+        else if (alphabet_digit_length == 8) {
+            alphabet->mask = LSD_MASK4;
+        }
+        else if (alphabet_digit_length == 16) {
+            alphabet->mask = LSD_MASK5;
+        }
+        else {
+            free(alphabet);
+            printf("Invalid argument\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    else {
+        free(alphabet);
+        printf("Invalid argument\n");
+        exit(EXIT_FAILURE);
+    }
+
+    return alphabet;
 }

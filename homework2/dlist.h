@@ -22,6 +22,7 @@ dlist_node *find_node_inplace(dlist list, int index);
 void insert_node(dlist *list, int data);
 int delete_node(dlist *list, int data);
 int list_sum(dlist_node *start, dlist_node *end);
+dlist *read_list();
 void print_list(dlist list);
 
 #endif

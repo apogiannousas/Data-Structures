@@ -128,6 +128,20 @@ int list_sum(dlist_node *start, dlist_node *end) {
     return sum;
 }
 
+// *** read_list *** //
+dlist *read_list() {
+    dlist *list = create_list();
+    int data;
+    
+    scanf("%d",&data);
+    while (data != -1) {
+        insert_node(list, data);
+        scanf("%d", &data);
+    }
+    
+    return list;
+}
+
 // *** print_list *** //
 void print_list(dlist list) {
     dlist_node *curr;

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "sort.h"
 
 // *** insertion_sort *** //
@@ -72,7 +73,7 @@ void selection_sort(dlist *list) {
 }
 
 // *** print_end_info *** //
-void print_quicksort_info(dlist_node *start, dlist_node *end, int recursion_num, char info_type) {
+void print_quicksort_info(dlist_node *start, dlist_node *end, unsigned int recursion_num, char info_type) {
 	dlist_node *curr;
 	int i;
 	
@@ -89,7 +90,7 @@ void print_quicksort_info(dlist_node *start, dlist_node *end, int recursion_num,
 }
 
 // *** quick_sort *** //
-void quick_sort(dlist *list, int left, int right, int recursion_num) {
+void quick_sort(dlist *list, int left, int right, unsigned int recursion_num) {
 	dlist_node *left_node, *right_node, *pivot;
 	dlist_node *left_temp_node, *right_temp_node;
 	int i = left - 1, j = right, temp;
@@ -148,7 +149,7 @@ void quick_sort(dlist *list, int left, int right, int recursion_num) {
 }
 
 // *** print_mergesort_info *** //
-void print_mergesort_info(dlist list, int recursion_num, char info_type) {
+void print_mergesort_info(dlist list, unsigned int recursion_num, char info_type) {
 	int i;
 	
 	// Print list info at the end of this recursion
@@ -191,8 +192,8 @@ dlist *split_list(dlist *list1) {
 	return list2;
 }
 
-// *** merge_lists *** //
-void merge_lists(dlist *list1, dlist *list2) {
+// *** sortedmerge_lists *** //
+void sortedmerge_lists(dlist *list1, dlist *list2) {
 	dlist_node *curr1 = list1->head->nxt;
 	dlist_node *curr2 = list2->head->nxt;
 
@@ -238,7 +239,7 @@ void merge_lists(dlist *list1, dlist *list2) {
 }
 
 // *** merge_sort *** //
-void merge_sort(dlist *list1, int recursion_num) {
+void merge_sort(dlist *list1, unsigned int recursion_num) {
 	dlist *list2 = NULL;
 	int temp;
 
@@ -267,6 +268,174 @@ void merge_sort(dlist *list1, int recursion_num) {
 	list2 = split_list(list1);
 	merge_sort(list1, recursion_num + 1);
 	merge_sort(list2, recursion_num + 1);
-	merge_lists(list1, list2);
+	sortedmerge_lists(list1, list2);
 	print_mergesort_info(*list1, recursion_num, '<');
+}
+
+// *** print_radixsortMSD_info *** //
+void print_radixsortMSD_info(dlist list, unsigned int alphabet_digit_length, unsigned int recursion_num, unsigned int bucket_num) {
+	int i, mask = 0x00000001;
+	
+	for (i = 0; i < recursion_num; i++) {
+		printf("== ");
+	}
+	printf("[%d, %d] (", recursion_num, bucket_num);
+
+	for (i = alphabet_digit_length - 1; i >= 0; i--) {
+		printf("%d", (bucket_num & (mask << i)) >> i);
+	}
+	printf(") ");
+	print_list(list);
+}
+
+// *** get_digitMSD *** //
+int get_digitMSD(unsigned int number, alphabet_info alphabet, unsigned int alphabet_digit_place) {
+	unsigned int movebits = alphabet.digit_length*alphabet_digit_place;
+
+	return ((number & (alphabet.mask >> movebits)) >> (32 - movebits - alphabet.digit_length));
+}
+
+// *** merge_lists *** //
+void merge_lists(dlist **bucket, int size, dlist *list) {
+	dlist_node *curr = list->head->nxt, *temp;
+	int i;
+
+    // Delete all internal nodes, connect head,tail and make size zero
+    while (curr != list->tail) {
+        temp = curr;
+        curr = curr->nxt;
+        free(temp);
+    }
+	list->head->nxt = list->tail;
+	list->tail->prev = list->head;
+	list->size = 0;
+	
+	// Connect all non-empty lists, put the final product in list and free bucket array
+	for (i = 0; i < size; i++) {
+		if (bucket[i]->size != 0 && list->size == 0) {
+			// Attach all nodes to list
+			list->head->nxt = bucket[i]->head->nxt;
+			list->head->nxt->prev = list->head;
+			list->tail->prev = bucket[i]->tail->prev;
+			list->tail->prev->nxt = list->tail;
+			list->size = bucket[i]->size;
+			// Disconnect bucket[i]'s head and tail from the nodes
+			bucket[i]->head->nxt = bucket[i]->tail;
+			bucket[i]->tail->prev = bucket[i]->head;
+		}
+		else if (bucket[i]->size != 0) {
+			// Attach all nodes to list
+			list->tail->prev->nxt = bucket[i]->head->nxt;
+			list->tail->prev->nxt->prev = list->tail->prev;
+			list->tail->prev = bucket[i]->tail->prev;
+			list->tail->prev->nxt = list->tail;
+			list->size += bucket[i]->size;
+			// Disconnect bucket[i]'s head and tail from the nodes
+			bucket[i]->head->nxt = bucket[i]->tail;
+			bucket[i]->tail->prev = bucket[i]->head;
+		}
+		delete_list(bucket[i]);
+	}
+	free(bucket);
+}
+
+// *** radix_sortMSD *** //
+void radix_sortMSD(dlist *list, alphabet_info alphabet, unsigned int recursion_num) {
+	dlist **bucket;
+	dlist_node *curr;
+	int i, index;
+
+	bucket = (dlist **) malloc(alphabet.digit_num*sizeof(dlist *));
+	if (bucket == NULL) {
+		perror("malloc");
+		exit(EXIT_FAILURE);
+	}
+
+	for (i = 0; i < alphabet.digit_num; i++) {
+		bucket[i] = create_list();
+	}
+
+	for (curr = list->head->nxt; curr != list->tail; curr = curr->nxt) {
+		index = get_digitMSD(curr->data, alphabet, recursion_num);
+		if (index >= alphabet.digit_num) {
+			fprintf(stderr, "Error in radix_sortMSB: Index surpassed alphabet_digit_num\n");
+			exit(EXIT_FAILURE);
+		}
+		insert_node(bucket[index], curr->data);
+	}
+
+	for (i = 0; i < alphabet.digit_num; i++) {
+		if (bucket[i]->size != 0) {
+			print_radixsortMSD_info(*bucket[i], alphabet.digit_length, recursion_num + 1, i);
+		}
+		if (bucket[i]->size > 1) {
+			radix_sortMSD(bucket[i], alphabet, recursion_num + 1);
+		}
+	}
+	merge_lists(bucket, alphabet.digit_num, list);
+}
+
+// *** get_digit_LSD *** //
+int get_digitLSD(unsigned int number, alphabet_info alphabet, unsigned int alphabet_digit_order) {
+	unsigned int movebits = alphabet.digit_length*alphabet_digit_order;
+
+	return ((number & (alphabet.mask << movebits)) >> movebits);
+}
+
+// *** print_radixsortLSD_info *** //
+void print_radixsortLSD_info(dlist list, alphabet_info alphabet, unsigned int alphabet_digit_order) {
+	int i, mask = 0x00000001;
+	unsigned int curr_digit;
+	dlist_node *curr;
+	
+	printf(" [%u] ", alphabet_digit_order);
+
+    for (curr = list.head->nxt; curr != list.tail; curr = curr->nxt) {
+        printf("%d", curr->data);
+		curr_digit = get_digitLSD(curr->data, alphabet, alphabet_digit_order);
+
+		putchar('(');
+		for (i = alphabet.digit_length - 1; i >= 0; i--) {
+			printf("%d", (curr_digit & (mask << i)) >> i);
+		}
+		putchar(')');
+		putchar(' ');
+    }
+    putchar('\n');
+}
+
+// *** bucket_sort *** //
+void bucket_sort(dlist *list, alphabet_info alphabet, unsigned int alphabet_digit_order) {
+	dlist **bucket;
+	dlist_node *curr;
+	int i, index;
+
+	bucket = (dlist **) malloc(alphabet.digit_num*sizeof(dlist *));
+	if (bucket == NULL) {
+		perror("malloc");
+		exit(EXIT_FAILURE);
+	}
+
+	for (i = 0; i < alphabet.digit_num; i++) {
+		bucket[i] = create_list();
+	}
+
+	for (curr = list->head->nxt; curr != list->tail; curr = curr->nxt) {
+		index = get_digitLSD(curr->data, alphabet, alphabet_digit_order);
+		if (index >= alphabet.digit_num) {
+			fprintf(stderr, "Error in radix_sortMSB: Index surpassed alphabet_digit_num\n");
+			exit(EXIT_FAILURE);
+		}
+		insert_node(bucket[index], curr->data);
+	}
+	merge_lists(bucket, alphabet.digit_num, list);
+}
+// *** radix_sortLSD *** //
+void radix_sortLSD(dlist *list, alphabet_info alphabet) {
+	int i, digits_per_word = 32 / alphabet.digit_length;
+
+	for (i = 0; i < digits_per_word; i++) {
+		bucket_sort(list, alphabet, i);
+		print_radixsortLSD_info(*list, alphabet, i);
+	}
 }
