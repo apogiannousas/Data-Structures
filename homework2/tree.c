@@ -99,6 +99,36 @@ btree_node *find_leftmost_rightnode(btree_node *root) {
     return prev_node;
 }
 
+// *** find_nodeLevel *** //
+int find_nodeLevel(btree *btree, int data) {
+    btree_node *curr_node;
+    int level = 0;
+
+    // Check if tree doesn't exist or is empty and return -1
+    if (btree == NULL || btree->root == NULL) {
+        return -1;
+    }
+
+    curr_node = btree->root;
+    while (curr_node != NULL) {
+        if (data < curr_node->data) {
+            curr_node = curr_node->left;
+            level++;
+        }
+        else if (data > curr_node->data) {
+            curr_node = curr_node->right;
+            level++;
+        }
+        else {
+            // If node with this value is found return its level
+            return level;
+        }
+    }
+
+    // Return -1 as level if the node does not exist
+    return -1;
+}
+
 // *** isRightChild *** //
 bool isRightChild(btree_node *node) {
     if (node->parent->data < node->data) {

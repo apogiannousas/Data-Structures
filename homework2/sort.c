@@ -276,6 +276,7 @@ void merge_sort(dlist *list1, unsigned int recursion_num) {
 void print_radixsortMSD_info(dlist list, unsigned int alphabet_digit_length, unsigned int recursion_num, unsigned int bucket_num) {
 	int i, mask = 0x00000001;
 	
+	// Print list info at the end of this recursion
 	for (i = 0; i < recursion_num; i++) {
 		printf("== ");
 	}
@@ -345,6 +346,7 @@ void radix_sortMSD(dlist *list, alphabet_info alphabet, unsigned int recursion_n
 	dlist_node *curr;
 	int i, index;
 
+	// Create an array of empty lists
 	bucket = (dlist **) malloc(alphabet.digit_num*sizeof(dlist *));
 	if (bucket == NULL) {
 		perror("malloc");
@@ -355,6 +357,8 @@ void radix_sortMSD(dlist *list, alphabet_info alphabet, unsigned int recursion_n
 		bucket[i] = create_list();
 	}
 
+	// For every list element find its proper index in the bucket
+	// array according to the current digit that is being tested
 	for (curr = list->head->nxt; curr != list->tail; curr = curr->nxt) {
 		index = get_digitMSD(curr->data, alphabet, recursion_num);
 		if (index >= alphabet.digit_num) {
@@ -364,6 +368,9 @@ void radix_sortMSD(dlist *list, alphabet_info alphabet, unsigned int recursion_n
 		insert_node(bucket[index], curr->data);
 	}
 
+	// Print some list info for the current level of recursion and if a
+	// bucket has more than one element recall the function to sort this bucket.
+	// In the end merge the lists from all buckets to get the final sorted list 
 	for (i = 0; i < alphabet.digit_num; i++) {
 		if (bucket[i]->size != 0) {
 			print_radixsortMSD_info(*bucket[i], alphabet.digit_length, recursion_num + 1, i);
@@ -388,8 +395,8 @@ void print_radixsortLSD_info(dlist list, alphabet_info alphabet, unsigned int al
 	unsigned int curr_digit;
 	dlist_node *curr;
 	
+	// Print list info at the current stage of the algorithm
 	printf(" [%u] ", alphabet_digit_order);
-
     for (curr = list.head->nxt; curr != list.tail; curr = curr->nxt) {
         printf("%d", curr->data);
 		curr_digit = get_digitLSD(curr->data, alphabet, alphabet_digit_order);
@@ -410,6 +417,7 @@ void bucket_sort(dlist *list, alphabet_info alphabet, unsigned int alphabet_digi
 	dlist_node *curr;
 	int i, index;
 
+	// Create an array of empty lists
 	bucket = (dlist **) malloc(alphabet.digit_num*sizeof(dlist *));
 	if (bucket == NULL) {
 		perror("malloc");
@@ -420,6 +428,9 @@ void bucket_sort(dlist *list, alphabet_info alphabet, unsigned int alphabet_digi
 		bucket[i] = create_list();
 	}
 
+	// For every list element find its proper index in the bucket
+	// array according to the current digit that is being tested
+	// In the end merge the lists from all buckets
 	for (curr = list->head->nxt; curr != list->tail; curr = curr->nxt) {
 		index = get_digitLSD(curr->data, alphabet, alphabet_digit_order);
 		if (index >= alphabet.digit_num) {
@@ -434,6 +445,7 @@ void bucket_sort(dlist *list, alphabet_info alphabet, unsigned int alphabet_digi
 void radix_sortLSD(dlist *list, alphabet_info alphabet) {
 	int i, digits_per_word = 32 / alphabet.digit_length;
 
+	// Call bucket_sort for each digit of the words 
 	for (i = 0; i < digits_per_word; i++) {
 		bucket_sort(list, alphabet, i);
 		print_radixsortLSD_info(*list, alphabet, i);

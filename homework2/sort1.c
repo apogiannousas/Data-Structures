@@ -3,15 +3,17 @@
 #include <math.h>
 #include "sort.h"
 
+//-----Function Prototypes-----//
 alphabet_info *create_alphabet(int radixsort_type, unsigned int alphabet_digit_length);
 
+//------------Main-------------//
 int main(int argc, char *argv[]) {
     enum sorting_algorithm {insort = 1, selsort, quicksort, mergesort, radixsortMSD, radixsortLSD};
     enum sorting_algorithm sort;
 	alphabet_info *alphabet;
     dlist *list;
 
-	if (argc < 2 || argc > 3) {
+    if (argc < 2 || argc > 3) {
         printf("Invalid argument\n");
         return 1;
     }
@@ -87,6 +89,8 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+//---Funtion Implementations---//
+
 // *** create_alphabet *** //
 alphabet_info *create_alphabet(int radixsort_type, unsigned int alphabet_digit_length) {
 	alphabet_info *alphabet = (alphabet_info *) malloc(sizeof(alphabet_info));
@@ -96,8 +100,10 @@ alphabet_info *create_alphabet(int radixsort_type, unsigned int alphabet_digit_l
         exit(EXIT_FAILURE);
     }
     
+    // Return the correct alphabet for a certain number of bits(length of each digit)
+    // given, for either radix_sortMSD or radix_sortLSD. If an invalid radixsort_type
+    // or invalid number of bits is given we terminate the programm with an error
     if (radixsort_type == 5) {
-        // Return the correct alphabet for a certain number of bits(length of each digit) given
         alphabet->digit_length = alphabet_digit_length;
         alphabet->digit_num = pow(2, alphabet_digit_length);
         if (alphabet_digit_length == 1) {
@@ -122,7 +128,6 @@ alphabet_info *create_alphabet(int radixsort_type, unsigned int alphabet_digit_l
         }
     }
     else if (radixsort_type == 6) {
-        // Return the correct alphabet for a certain number of bits(length of each digit) given
         alphabet->digit_length = alphabet_digit_length;
         alphabet->digit_num = pow(2, alphabet_digit_length);
         if (alphabet_digit_length == 1) {
