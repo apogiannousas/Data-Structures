@@ -293,7 +293,7 @@ void print_radixsortMSD_info(dlist list, unsigned int alphabet_digit_length, uns
 int get_digitMSD(unsigned int number, alphabet_info alphabet, unsigned int alphabet_digit_place) {
 	unsigned int movebits = alphabet.digit_length*alphabet_digit_place;
 
-	return ((number & (alphabet.mask >> movebits)) >> (32 - movebits - alphabet.digit_length));
+	return ((number & (alphabet.mask >> movebits)) >> (8*sizeof(int) - movebits - alphabet.digit_length));
 }
 
 // *** merge_lists *** //

@@ -1,32 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "dlist.h"
 #include "tree.h"
 
-//-----------Structs-----------//
-typedef struct dynamic_array_t {
-    int *array;
-    int size;
-} dynamic_array;
-
 //-----Function Prototypes-----//
-dynamic_array *read_preorder();
-btree *construct_btree(dynamic_array array);
-void find_nodes_of_level(btree_node *root, int starting_level, int target_level, dynamic_array *d_array);
+btree *construct_btree();
+void find_nodes_of_level(btree_node *root, int starting_level, int target_level, dlist *list);
 
 //------------Main-------------//
 int main(int argc, char *argv[]) {
-    int i, data, level;
-    dynamic_array *d_array;
-    btree *btree;
-
-    // Read a preorder tree traversal and construct the binary tree
-    d_array = read_preorder();
-    btree = construct_btree(*d_array);
-    
-    // Delete the array's info
-    free(d_array->array);
-    d_array->array = NULL;
-    d_array->size = 0;
+    btree *btree = construct_btree();
+    dlist *list = create_list();
+    int data, level;
 
     // Request an integer
     printf("Enter integer: ");
@@ -41,16 +26,19 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     else {
-        find_nodes_of_level(btree->root, 0, level, d_array);
-        printf("\nIntegers in level %d are: ", level);
-        for (i = 0; i < d_array->size; i++) {
-            printf("%d ", d_array->array[i]);
+        // Find and store all nodes in the level of the node given
+        find_nodes_of_level(btree->root, 0, level, list);
+        if (list->size == 0) {
+            fprintf(stderr, "Error in find_nodes_of_level: there weren't any nodes in level %d\n", level);
+            return 1;
         }
-        putchar('\n');
+
+        // Print all the nodes found in that level
+        printf("\nIntegers in level %d are: ", level);
+        print_list(*list);
     }
 
-    free(d_array->array);
-    free(d_array);
+    delete_list(list);
     delete_btree(btree->root);
     free(btree);
 
@@ -59,74 +47,39 @@ int main(int argc, char *argv[]) {
 
 //---Funtion Implementations---//
 
-// *** read_preorder *** //
-dynamic_array *read_preorder() {
-    dynamic_array *d_array; 
-    int data = 0, *temp;
-
-    // Allocate memory for a dynamic array
-    d_array = (dynamic_array *) malloc(sizeof(dynamic_array));
-    if (d_array == NULL) {
-        perror("malloc");
-        exit(EXIT_FAILURE);
-    }
-    d_array->array = NULL;
-    d_array->size = 0;
+// *** construct_btree *** //
+btree *construct_btree() {
+    btree *btree = create_btree();
+    int data = 0;
 
     // Read the pre-order traversal of a binary
-    // tree and store it in an array
+    // tree and construct that tree 
     scanf("%d",&data);
     while (data >= 0) {
-        (d_array->size)++;
-        temp = (int *) realloc(d_array->array, (d_array->size)*sizeof(int));
-        if (temp == NULL) {
-            perror("realloc");
-            exit(EXIT_FAILURE);
-        }
-        d_array->array = temp;
-
-        d_array->array[(d_array->size) - 1] = data;
+        add_node(btree, data);
         scanf("%d", &data);
-    }
-
-    return d_array;
-}
-
-// *** construct_btree *** //
-btree *construct_btree(dynamic_array d_array) {
-    btree *btree = create_btree();
-    int i;
-
-    for (i = 0; i < d_array.size; i++) {
-        add_node(btree, d_array.array[i]);
     }
 
     return btree;
 }
 
 // *** find_nodes_of_level *** //
-void find_nodes_of_level(btree_node *root, int starting_level, int target_level , dynamic_array *d_array) {
-    int *temp;
-
+void find_nodes_of_level(btree_node *root, int starting_level, int target_level , dlist *list) {
+    // If we reach target level we store the value of that node, otherwise if we are in a
+    // smaller level we continue to go downwards for each one of the children, giving priority
+    // to the left child so that the final list will contain the level nodes in the correct order
     if (root == NULL || starting_level > target_level) {
         return;
     }
     else if (starting_level < target_level) {
         if (root->left != NULL) {
-            find_nodes_of_level(root->left, starting_level + 1, target_level, d_array);
+            find_nodes_of_level(root->left, starting_level + 1, target_level, list);
         }
         if (root->right != NULL) {
-            find_nodes_of_level(root->right, starting_level + 1, target_level, d_array);
+            find_nodes_of_level(root->right, starting_level + 1, target_level, list);
         }
     }
     else {
-        (d_array->size)++;
-        temp = (int *) realloc(d_array->array, (d_array->size)*sizeof(int));
-        if (temp == NULL) {
-            perror("realloc");
-            exit(EXIT_FAILURE);
-        }
-        d_array->array = temp;
-        d_array->array[(d_array->size) - 1] = root->data;
+        insert_node(list, root->data);
     }
 }
