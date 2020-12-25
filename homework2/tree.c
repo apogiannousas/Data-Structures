@@ -196,15 +196,17 @@ int remove_node(btree *btree, int data) {
         return 0;
     }
 
-    // If the node has two children give it the value of its rightmost 
-    // descendant in the left subtree and try to delete the descedant instead.
-    // Otherwise if it has one child, make its parent the child's parent 
+    // If the node has two children give it the value of its rightmost
+    // descendant in the left subtree and try to delete the descedant instead. 
     if (wanted_node->left != NULL && wanted_node->right != NULL) {
         substitute_node = find_rightmost_leftnode(wanted_node);
         wanted_node->data = substitute_node->data;
         wanted_node = substitute_node;
     }
-    else if (wanted_node->left != NULL) {
+    
+	// If the current node that is to be deleted has
+	// one child, make its parent the child's parent
+	if (wanted_node->left != NULL) {
         wanted_node->left->parent = wanted_node->parent;
     }
     else if (wanted_node->right != NULL) {
