@@ -269,6 +269,50 @@ void simple_right_rotation(hbtree_node *top, hbtree_node *intermediate, hbtree_n
 	}
 }
 
+// *** balance_node *** //
+void balance_node(hbtree_node *node, bool isleftheightbigger, bool heightupdate) {
+	if (isleftheightbigger == true) {
+		if (node->left->right == NULL) {
+			simple_right_rotation(node, node->left, node->left->left, heightupdate);
+		}
+		else if (node->left->left == NULL) {
+			// Double right rotation
+			simple_left_rotation(node->left, node->left->right, node->left->right->right, heightupdate);
+			simple_right_rotation(node, node->left, node->left->left, heightupdate);
+		}
+		else {
+			if (node->left->left->height >= node->left->right->height) {
+				simple_right_rotation(node, node->left, node->left->left, heightupdate);
+			}
+			else {
+				// Double right rotation
+				simple_left_rotation(node->left, node->left->right, node->left->right->right, heightupdate);
+				simple_right_rotation(node, node->left, node->left->left, heightupdate);
+			}
+		}
+	}
+	else {
+		if (node->right->left == NULL) {
+			simple_left_rotation(node, node->right, node->right->right, heightupdate);
+		}
+		else if (node->right->right == NULL) {
+			// Double left rotation
+			simple_right_rotation(node->right, node->right->left, node->right->left->left, heightupdate);
+			simple_left_rotation(node, node->right, node->right->right, heightupdate);
+		}
+		else {
+			if (node->right->right->height >= node->right->left->height) {
+				simple_left_rotation(node, node->right, node->right->right, heightupdate);
+			}
+			else {
+				// Double left rotation
+				simple_right_rotation(node->right, node->right->left, node->right->left->left, heightupdate);
+				simple_left_rotation(node, node->right, node->right->right, heightupdate);
+			}
+		}
+	}
+}
+
 // *** add_hbnode *** //
 int add_hbnode(hbtree *btree, int data) {
     hbtree_node *parent = find_hbtreeNode(btree, data);
@@ -317,50 +361,14 @@ int add_hbnode(hbtree *btree, int data) {
 
 		// Apply balancing if the node is unbalanced
 		if ((leftchild_height - rightchild_height) > balance_factor(curr->size)) {
-			if (curr->left->right == NULL) {
-				simple_right_rotation(curr, curr->left, curr->left->left, true);
-			}
-			else if (curr->left->left == NULL) {
-				// Double right rotation
-				simple_left_rotation(curr->left, curr->left->right, curr->left->right->right, true);
-				simple_right_rotation(curr, curr->left, curr->left->left, true);
-			}
-			else {
-				if (curr->left->left->height >= curr->left->right->height) {
-					simple_right_rotation(curr, curr->left, curr->left->left, true);
-				}
-				else {
-					// Double right rotation
-					simple_left_rotation(curr->left, curr->left->right, curr->left->right->right, true);
-					simple_right_rotation(curr, curr->left, curr->left->left, true);
-				}
-			}
-
+			balance_node(curr, true, true);
 			if (curr == btree->root) {
 				btree->root = curr->parent;
 			}
 			break;
 		}
 		else if ((rightchild_height - leftchild_height) > balance_factor(curr->size)) {
-			if (curr->right->left == NULL) {
-				simple_left_rotation(curr, curr->right, curr->right->right, true);
-			}
-			else if (curr->right->right == NULL) {
-				// Double left rotation
-				simple_right_rotation(curr->right, curr->right->left, curr->right->left->left, true);
-				simple_left_rotation(curr, curr->right, curr->right->right, true);
-			}
-			else {
-				if (curr->right->right->height >= curr->right->left->height) {
-					simple_left_rotation(curr, curr->right, curr->right->right, true);
-				}
-				else {
-					// Double left rotation
-					simple_right_rotation(curr->right, curr->right->left, curr->right->left->left, true);
-					simple_left_rotation(curr, curr->right, curr->right->right, true);
-				}
-			}
-
+			balance_node(curr, false, true);
 			if (curr == btree->root) {
 				btree->root = curr->parent;
 			}
@@ -427,50 +435,14 @@ int remove_hbnode(hbtree *btree, int data) {
 		// Apply balancing if the node is unbalanced
 		if ((leftchild_height - rightchild_height) > balance_factor(curr->size)) {
 			nodeisBalanced = false;
-			if (curr->left->right == NULL) {
-				simple_right_rotation(curr, curr->left, curr->left->left, false);
-			}
-			else if (curr->left->left == NULL) {
-				// Double right rotation
-				simple_left_rotation(curr->left, curr->left->right, curr->left->right->right, false);
-				simple_right_rotation(curr, curr->left, curr->left->left, false);
-			}
-			else {
-				if (curr->left->left->height >= curr->left->right->height) {
-					simple_right_rotation(curr, curr->left, curr->left->left, false);
-				}
-				else {
-					// Double right rotation
-					simple_left_rotation(curr->left, curr->left->right, curr->left->right->right, false);
-					simple_right_rotation(curr, curr->left, curr->left->left, false);
-				}
-			}
-
+			balance_node(curr, true, false);
 			if (curr == btree->root) {
 				btree->root = curr->parent;
 			}
 		}
 		else if ((rightchild_height - leftchild_height) > balance_factor(curr->size)) {
 			nodeisBalanced = false;
-			if (curr->right->left == NULL) {
-				simple_left_rotation(curr, curr->right, curr->right->right, false);
-			}
-			else if (curr->right->right == NULL) {
-				// Double left rotation
-				simple_right_rotation(curr->right, curr->right->left, curr->right->left->left, false);
-				simple_left_rotation(curr, curr->right, curr->right->right, false);
-			}
-			else {
-				if (curr->right->right->height >= curr->right->left->height) {
-					simple_left_rotation(curr, curr->right, curr->right->right, false);
-				}
-				else {
-					// Double left rotation
-					simple_right_rotation(curr->right, curr->right->left, curr->right->left->left, false);
-					simple_left_rotation(curr, curr->right, curr->right->right, false);
-				}
-			}
-
+			balance_node(curr, false, false);
 			if (curr == btree->root) {
 				btree->root = curr->parent;
 			}
