@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
 
 		printf("RB OK\n\n");
 		print_rbtree_preorder(*tree, preorder_array, pattern);
-		show_rbtree(tree, preorder_array, pattern);
+		//show_rbtree(tree, preorder_array, pattern);
 		free(preorder_array);
 	}
 	else {

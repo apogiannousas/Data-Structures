@@ -1,19 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include "hbtree.h"
+#include "htable.h"
 
 //-----Function Prototypes-----//
 void init_input_str(char *input_str);
-void write_dotfile(FILE *fptr, hbtree_node *root);
-void show_hbtree(hbtree *tree, int photonum);
+
 //------------Main-------------//
 int main(int argc, char *argv[]) {
 	enum command {insert, delete, find};
 	enum command command;
-    hbtree *tree = create_hbtree();
+    htable *table = create_htable();
 	char input_str[11] = {'\0'};
-    int data, result, i = 0;
+    int key, data, result, i = 0;
 
 	result = scanf("%s", input_str);
 	while (result == 1) {
@@ -32,14 +30,11 @@ int main(int argc, char *argv[]) {
 					break;
 				}
 				case 'p': {
-					putchar('\n');
-					print_hbtree_preorder(tree->root);
-					putchar('\n');
+					print_htable(table);
 					break;
 				}
 				case 'q': {
-					delete_hbtree(tree->root);
-					free(tree);
+					delete_htable(table);
 					return 0;
 				}
 				default: {
@@ -56,10 +51,9 @@ int main(int argc, char *argv[]) {
 		data = atoi(input_str);
 		switch (command) {
 			case insert: {
-				result = add_hbnode(tree, data);
+				result = insert_entry(table, data, true);
 				if (result == 1) {
 					printf("\nINSERTED %d\n", data);
-					//show_hbtree(tree, i);
 					i++;
 				}
 				else {
@@ -68,10 +62,9 @@ int main(int argc, char *argv[]) {
 				break;
 			}
 			case delete: {
-				result = remove_hbnode(tree, data);
+				result = remove_entry(table, data, true);
 				if (result == 1) {
 					printf("\nDELETED %d\n", data);
-					//show_hbtree(tree, i);
 					i++;
 				}
 				else {
@@ -80,7 +73,7 @@ int main(int argc, char *argv[]) {
 				break;
 			}
 			case find: {
-				result = find_hbnode(tree, data);
+				result = find_entry(table, data, &key);
 				if (result == 1) {
 					printf("\nFOUND %d\n", data);
 				}
@@ -97,9 +90,7 @@ int main(int argc, char *argv[]) {
 		init_input_str(input_str);
 		result = scanf("%s", input_str);
 	}
-
-	delete_hbtree(tree->root);
-	free(tree);
+	delete_htable(table);
 
     return 1;
 }
@@ -113,45 +104,4 @@ void init_input_str(char *input_str) {
 	for (i = 0; i < 11; i++) {
 		input_str[i] = '\0';
 	}
-}
-
-// *** write_dotfile *** //
-void write_dotfile(FILE *fptr, hbtree_node *root) {
-	// Write root info
-	if (root == NULL) {
-		return;
-	}
-	fprintf(fptr, "\t%d [label=\"\\N (%d, %d,%d)\"];\n", root->data, balance_factor(root->size), root->height, root->size);
-
-	// Write left subtree
-	if (root->left != NULL) {
-		fprintf(fptr, "\t%d -> %d;\n", root->data, root->left->data);
-		write_dotfile(fptr, root->left);
-	}
-
-	// Write right subtree
-	if (root->right != NULL) {
-		fprintf(fptr, "\t%d -> %d;\n", root->data, root->right->data);
-		write_dotfile(fptr, root->right);
-	}
-}
-
-// *** show_hbtree *** //
-// Creates a photo of the tree for debugging purposes
-void show_hbtree(hbtree *tree, int photonum) {
-	FILE *fptr = NULL;
-	char command[36] = {'\0'};
-
-	fptr = fopen("hbtree.dot", "w");
-	if (fptr == NULL) {
-		fprintf(stderr, "Error in creation of btree.dot file\n");
-		exit(EXIT_FAILURE);
-	}
-
-	fprintf(fptr, "digraph G {\n");
-	write_dotfile(fptr, tree->root);
-	fprintf(fptr, "}");
-	fclose(fptr);
-	sprintf(command, "dot -Tpng hbtree.dot -o hbtree%d.png", photonum);
-	system(command);
 }
