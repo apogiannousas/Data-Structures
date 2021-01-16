@@ -161,6 +161,18 @@ bool isLeftHbChild(hbtree_node *node) {
     return false;
 }
 
+hbtree_node *give_sibling(hbtree_node *node) {
+	if (node == NULL || node->parent == NULL) {
+		return NULL;
+	}
+	else if (isLeftHbChild(node) == true) {
+		return node->parent->right;
+	}
+	else {
+		return node->parent->left;
+	}
+}
+
 // *** balance_factor *** //
 int balance_factor(int size) {
 	return (max(1, (int) log2(size)));
@@ -381,11 +393,13 @@ int add_hbnode(hbtree *btree, int data) {
 }
 
 // *** rmv_balancing *** //
-void rmv_balancing(hbtree *btree, hbtree_node *node) {
+void rmv_balancing(hbtree *btree, hbtree_node *node, hbtree_node *stopping_node) {
 	int leftchild_height, rightchild_height;
+	hbtree_node *sibling, *parent;
+	bool isleftheightbigger;
 
-	// Return where there are no other nodes to check
-	if (node == NULL) {
+	// Return when all nodes under our stopping node are balanced
+	if (node == NULL || node == stopping_node) {
 		return;
 	}
 	
@@ -395,50 +409,39 @@ void rmv_balancing(hbtree *btree, hbtree_node *node) {
 	node->height = max(leftchild_height, rightchild_height) + 1;
 	node->size = give_size(node->left) + give_size(node->right) + 1;
 
-	// Apply balancing if the node is unbalanced
+	// If the node is unbalanced set the right flag for the balancing function
+	// , otherwise check if his parent is unbalanced and repeat the process
 	if ((leftchild_height - rightchild_height) > balance_factor(node->size)) {
-		balance_node(node, true, false);
-		if (node == btree->root) {
-			btree->root = node->parent;
-		}
-		
-		// Recursively check if the node is still unbalanced
-		// and repeat the balancing operations. Afterwards check
-		// if his sibling became unbalanced and balance it too
-		rmv_balancing(btree, node);
-		if (isLeftHbChild(node) == true) {
-			rmv_balancing(btree, node->parent->right);
-		}
-		else {
-			rmv_balancing(btree, node->parent->left);
-		}
+		isleftheightbigger = true;
 	}
 	else if ((rightchild_height - leftchild_height) > balance_factor(node->size)) {
-		balance_node(node, false, false);
-		if (node == btree->root) {
-			btree->root = node->parent;
-		}
-
-		// Recursively check if the node is still unbalanced
-		// and repeat the balancing operations. Afterwards check
-		// if his sibling became unbalanced and balance it too
-		rmv_balancing(btree, node);
-		if (isLeftHbChild(node) == true) {
-			rmv_balancing(btree, node->parent->right);
-		}
-		else {
-			rmv_balancing(btree, node->parent->left);
-		}
+		isleftheightbigger = false;
+	}
+	else {
+		rmv_balancing(btree, node->parent, stopping_node);
+		return;
 	}
 
-	// Repeat the process for node's parent
-	rmv_balancing(btree, node->parent);
+	// The node is unbalanced so apply balancing and 
+	// then check him again as well as his sibling.
+	// When those two (and all others under their parent)
+	// are balanced do the same for their parent
+	balance_node(node, isleftheightbigger, false);
+	if (node == btree->root) {
+		btree->root = node->parent;
+	}
+	parent = node->parent;
+	sibling = give_sibling(node);
+	
+	rmv_balancing(btree, node, parent);
+	rmv_balancing(btree, sibling, parent);
+	rmv_balancing(btree, parent, stopping_node);
 }
 
 // *** remove_hbnode *** //
 int remove_hbnode(hbtree *btree, int data) {
     hbtree_node *wanted_node = find_hbtreeNode(btree, data);
-    hbtree_node *substitute_node, *curr;
+    hbtree_node *substitute_node, *curr, *parent;
 
     // Check if node was found
     if (wanted_node == NULL || wanted_node->data != data) {
@@ -477,7 +480,13 @@ int remove_hbnode(hbtree *btree, int data) {
     btree->size--;
     curr = wanted_node->parent;
     free(wanted_node);
-	rmv_balancing(btree, curr);
+	
+	// Ensure all nodes above the deleted one are balanced
+	while (curr != NULL) {
+		parent = curr->parent;
+		rmv_balancing(btree, curr, parent);
+		curr = parent;
+	}
 
     return 1;
 }
